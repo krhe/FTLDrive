@@ -14,6 +14,7 @@ namespace ScienceFoundry.FTL
         private float updateInterval = 1f;
         private float activationTime = 0;
         private bool startSpin = false;
+        private FXGroup driveSound;
 
         /**
          * \brief Jump beacon name (displayed in the GUI)
@@ -90,6 +91,7 @@ namespace ScienceFoundry.FTL
             {
                 ScreenMessages.PostScreenMessage("Spinning up FTL drive...", (float)maxChargeTime, ScreenMessageStyle.UPPER_CENTER);
                 startSpin = true;
+                driveSound.audio.Play();
             }
         }
 
@@ -142,6 +144,10 @@ namespace ScienceFoundry.FTL
 
         public override void OnStart(PartModule.StartState state)
         {
+            SoundManager.LoadSound("FTLDrive/Sounds/drive_sound", "DriveSound");
+            driveSound = new FXGroup("DriveSound");
+            SoundManager.CreateFXSound(part, driveSound, "DriveSound", true, 50f);
+
             try
             {
                 driveActivated = false;                
@@ -244,6 +250,7 @@ namespace ScienceFoundry.FTL
                 ScreenMessages.PostScreenMessage("Jump failed!", 2f, ScreenMessageStyle.UPPER_CENTER);
             }
 
+            driveSound.audio.Stop();
             driveActivated = false;
             updateInterval = 1f;
             Force = 0;
