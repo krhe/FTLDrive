@@ -41,3 +41,8 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+*.dll
+*.dll
+GameData/FTLDrive/Plugins/FTLDrive.dll
+*.pdb
+*.suo
