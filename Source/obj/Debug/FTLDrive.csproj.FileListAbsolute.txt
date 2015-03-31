@@ -1,4 +1,3 @@
-C:\Users\Kristian\Documents\GitHub\FTLDrive\Source\obj\Debug\FTLDrive.csprojResolveAssemblyReference.cache
 C:\Users\Kristian\Documents\GitHub\FTLDrive\Source\bin\Debug\FTLDrive.dll
 C:\Users\Kristian\Documents\GitHub\FTLDrive\Source\bin\Debug\FTLDrive.pdb
 C:\Users\Kristian\Documents\GitHub\FTLDrive\Source\bin\Debug\Assembly-CSharp.dll
@@ -9,5 +8,6 @@ C:\Users\Kristian\Documents\GitHub\FTLDrive\Source\bin\Debug\Mono.Cecil.dll
 C:\Users\Kristian\Documents\GitHub\FTLDrive\Source\bin\Debug\Mono.Security.dll
 C:\Users\Kristian\Documents\GitHub\FTLDrive\Source\bin\Debug\Assembly-CSharp.xml
 C:\Users\Kristian\Documents\GitHub\FTLDrive\Source\bin\Debug\UnityEngine.xml
+C:\Users\Kristian\Documents\GitHub\FTLDrive\Source\obj\Debug\FTLDrive.csprojResolveAssemblyReference.cache
 C:\Users\Kristian\Documents\GitHub\FTLDrive\Source\obj\Debug\FTLDrive.dll
 C:\Users\Kristian\Documents\GitHub\FTLDrive\Source\obj\Debug\FTLDrive.pdb

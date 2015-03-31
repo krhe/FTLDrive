@@ -25,9 +25,6 @@ namespace ScienceFoundry.FTL
         [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Beacon", isPersistant = false)]
         private string beaconName = BeaconSelector.NO_TARGET;
 
-        [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Generated force", isPersistant = false)]
-        private string generatedForceStr = "0.0N";
-
         private double Force
         {
             get
@@ -37,7 +34,6 @@ namespace ScienceFoundry.FTL
             set
             {
                 generatedForce = value;
-                generatedForceStr = String.Format("{0:0.0}N", generatedForce);
             }
         }
 
@@ -47,21 +43,18 @@ namespace ScienceFoundry.FTL
         [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Force required", isPersistant = false)]
         private string requiredForce = "Inf";
 
-        [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Success propability", isPersistant = false)]
-        private string succesProbability = "0.0%";
-
         /**
          * \brief Is the ship spinning up its drive.
          */
         private bool driveActivated = false;
 
-        [KSPField]
+        [KSPField(guiActive=false, guiActiveEditor=false, isPersistant=true)]
         public double maxGeneratorForce = 2000;
 
-        [KSPField]
+        [KSPField(guiActive = false, guiActiveEditor = false, isPersistant = true)]
         public double maxChargeTime = 10;
 
-        [KSPField]
+        [KSPField(guiActive = false, guiActiveEditor = false, isPersistant = true)]
         public double requiredElectricalCharge = 100;
 
         /**
@@ -78,7 +71,6 @@ namespace ScienceFoundry.FTL
             str.AppendFormat("Requires\n");
             str.AppendFormat("- Electric charge: {0:0.00}/s\n\n", requiredElectricalCharge);
             str.Append("Navigational computer\n");
-            str.Append("- Jump succes probability\n");
             str.Append("- Required force\n");
 
             return str.ToString();
@@ -115,7 +107,7 @@ namespace ScienceFoundry.FTL
 
             if (navCom.IsJumpPossible())
             {
-                ScreenMessages.PostScreenMessage(String.Format("Beacon {0} selected ({1:0.0}%)", beaconName, succesProbability),
+                ScreenMessages.PostScreenMessage(String.Format("Beacon {0} selected", beaconName),
                                                  4f,
                                                  ScreenMessageStyle.UPPER_CENTER);
             }
@@ -131,14 +123,12 @@ namespace ScienceFoundry.FTL
             if (navCom.IsJumpPossible())
             {
                 beaconName = navCom.Beacon.vesselName;
-                requiredForce = String.Format("{0:0.0}N", navCom.GetRequiredForce());
-                succesProbability = String.Format("{0:0.0}%", 100 * navCom.GetSuccessProbability(maxGeneratorForce));
+                requiredForce = String.Format("{0:0.0}N / {1:0.0}N", navCom.GetRequiredForce(), maxGeneratorForce);
             }
             else
             {
                 beaconName = BeaconSelector.NO_TARGET;
                 requiredForce = "Inf";
-                succesProbability = "0.0%";
             }
         }
 
