@@ -3,7 +3,7 @@ Ever wished you where somewhere else instantly. With the Kerbal Science Foundry 
 than light (FTL) drive you can! Just spin it up to create an instant reality dysfunction that might, 
 just might transport you instantly to another point in space.
 
-To actually end up where you want to go, instead of experience a permanent fatal reality dis-coherence (i.e.
+To actually end up where you want to go, instead of experiencing a permanent fatal reality dis-coherence (i.e.
 you ship goes puff, aka. explodes) there are a few recommendations to observe:
 - Place a FTL beacon where you want to go, otherwise, the FTL drive cannot get a lock on your target destination 
 and will refuse to even spin up.
