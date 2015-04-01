@@ -11,3 +11,5 @@ and will refuse to even spin up.
 
 Other than that the FTL drive holds the promise to revolutionize interplanetary transfers and to take the grind out of 
 flying vessels from one point in the Kerbol system to another. 
+
+LICENSE: CC-BY-NC-SA-3.0
