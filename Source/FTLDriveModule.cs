@@ -6,14 +6,19 @@ using UnityEngine;
 
 namespace ScienceFoundry.FTL
 {
+    [KSPModule("FTL Drive")]
     public class FTLDriveModule : PartModule
     {
-        //FXGroup alarmSound;
+        private enum DriveState
+        {
+            IDLE,
+            STARTING,
+            SPINNING,
+            JUMPING
+        }
 
-        private float lastUpdate = 0.0f;
-        private float updateInterval = 1f;
-        private float activationTime = 0;
-        private bool startSpin = false;
+        private DriveState state = DriveState.IDLE;
+        private double activationTime = 0;
         private FXGroup driveSound;
 
         /**
@@ -33,20 +38,21 @@ namespace ScienceFoundry.FTL
             }
             set
             {
+                generatedForceStr = String.Format("{0:0.0}iN", value);
                 generatedForce = value;
             }
         }
 
         private double generatedForce = 0;
 
+        [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Generated force", isPersistant = false)]
+        private string generatedForceStr = "0.0iN";
 
         [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Force required", isPersistant = false)]
         private string requiredForce = "Inf";
 
-        /**
-         * \brief Is the ship spinning up its drive.
-         */
-        private bool driveActivated = false;
+        [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Success probability", isPersistant = false)]
+        private string successProb = "?";
 
         [KSPField(guiActive=false, guiActiveEditor=false, isPersistant=true)]
         public double maxGeneratorForce = 2000;
@@ -66,12 +72,13 @@ namespace ScienceFoundry.FTL
         {
             var str = new StringBuilder();
 
-            str.AppendFormat("Maximal force: {0:0.0N}\n", maxGeneratorForce);
+            str.AppendFormat("Maximal force: {0:0.0}iN\n", maxGeneratorForce);
             str.AppendFormat("Maximal charge time: {0:0.0}s\n\n", maxChargeTime);
             str.AppendFormat("Requires\n");
             str.AppendFormat("- Electric charge: {0:0.00}/s\n\n", requiredElectricalCharge);
             str.Append("Navigational computer\n");
             str.Append("- Required force\n");
+            str.Append("- Success probability\n");
 
             return str.ToString();
         }
@@ -79,11 +86,14 @@ namespace ScienceFoundry.FTL
         [KSPEvent(active = true, guiActive = true, guiActiveEditor = true, guiName = "Jump")]
         public void Jump()
         {
-            if (!driveActivated)
+            if (navCom.JumpPossible)
             {
-                ScreenMessages.PostScreenMessage("Spinning up FTL drive...", (float)maxChargeTime, ScreenMessageStyle.UPPER_CENTER);
-                startSpin = true;
-                driveSound.audio.Play();
+                if (state == DriveState.IDLE)
+                {
+                    ScreenMessages.PostScreenMessage("Spinning up FTL drive...", (float)maxChargeTime, ScreenMessageStyle.UPPER_CENTER);
+                    state = DriveState.STARTING;
+                    driveSound.audio.Play();
+                }
             }
         }
 
@@ -96,39 +106,47 @@ namespace ScienceFoundry.FTL
         [KSPEvent(active = true, guiActive = true, guiActiveEditor = true, guiName = "Next Beacon")]
         public void NextBeacon()
         {
-            navCom.Beacon = BeaconSelector.Next(navCom.Beacon, FlightGlobals.ActiveVessel);
-            UpdateJumpStatistics();
+            if (state == DriveState.IDLE)
+            {
+                navCom.Destination = BeaconSelector.Next(navCom.Destination, FlightGlobals.ActiveVessel);
+                UpdateJumpStatistics();
+            }
         }
 
         [KSPAction("Next beacon")]
         public void NextAction(KSPActionParam p)
         {
-            NextBeacon();
+            if (state == DriveState.IDLE)
+            {
+                NextBeacon();
 
-            if (navCom.IsJumpPossible())
-            {
-                ScreenMessages.PostScreenMessage(String.Format("Beacon {0} selected", beaconName),
-                                                 4f,
-                                                 ScreenMessageStyle.UPPER_CENTER);
-            }
-            else
-            {
-                ScreenMessages.PostScreenMessage("NAVCOM Unavailable", 4f, ScreenMessageStyle.UPPER_CENTER);
+                if (navCom.JumpPossible)
+                {
+                    ScreenMessages.PostScreenMessage(String.Format("Beacon {0} selected", beaconName),
+                                                     4f,
+                                                     ScreenMessageStyle.UPPER_CENTER);
+                }
+                else
+                {
+                    ScreenMessages.PostScreenMessage("NAVCOM Unavailable", 4f, ScreenMessageStyle.UPPER_CENTER);
+                }
             }
 
         }
 
         private void UpdateJumpStatistics()
         {
-            if (navCom.IsJumpPossible())
+            if (navCom.JumpPossible)
             {
-                beaconName = navCom.Beacon.vesselName;
-                requiredForce = String.Format("{0:0.0}N / {1:0.0}N", navCom.GetRequiredForce(), maxGeneratorForce);
+                beaconName = navCom.Destination.vesselName;
+                requiredForce = String.Format("{0:0.0}iN", navCom.GetRequiredForce());
+                successProb = String.Format("{0:0.0}%", navCom.GetSuccesProbability(maxGeneratorForce)*100);
             }
             else
             {
                 beaconName = BeaconSelector.NO_TARGET;
                 requiredForce = "Inf";
+                successProb = "?";
             }
         }
 
@@ -140,10 +158,10 @@ namespace ScienceFoundry.FTL
 
             try
             {
-                driveActivated = false;                
+                this.state = DriveState.IDLE;
 
                 if (state != StartState.Editor)
-                    navCom.ActiveVessel = FlightGlobals.ActiveVessel;
+                    navCom.Source = FlightGlobals.ActiveVessel;
             }
             catch (Exception ex)
             {
@@ -175,30 +193,74 @@ namespace ScienceFoundry.FTL
             base.OnAwake();
         }
 
-        public override void OnUpdate()
-        {
-            var currentTime = Time.time;
-            var deltaT = currentTime - lastUpdate;
+        private double lastUpdateTime = -1.0f;
 
-            if (deltaT > updateInterval)
+        private double LastUpdateTime
+        {
+            get
             {
-                lastUpdate = currentTime;
+                if (lastUpdateTime < 0)
+                {
+                    lastUpdateTime = Planetarium.GetUniversalTime();
+                }
+
+                return lastUpdateTime;
+            }
+            set
+            {
+                lastUpdateTime = value;
+            }
+        }
+
+        public override void OnFixedUpdate()
+        {
+            if (IsVesselReady())
+            {
+                var deltaT = GetElapsedTime();
+                LastUpdateTime += deltaT;
                 activationTime += deltaT;
 
-                if (startSpin)
+                switch (state)
                 {
-                    StartDrive();
+                    case DriveState.IDLE:
+                        break;
+                    case DriveState.STARTING:
+                        state = DriveState.SPINNING;
+                        activationTime = 0;
+                        break;
+                    case DriveState.SPINNING:
+                        SpinningUpDrive(deltaT);
+                        break;
+                    case DriveState.JUMPING:
+                        ExecuteJump();
+                        break;
                 }
-
-                if (driveActivated)
-                {
-                    SpinningUpDrive(deltaT);
-                }
-
-                UpdateJumpStatistics();
             }
 
+            base.OnFixedUpdate();
+        }
 
+        /**
+         * \brief Check if the vessel is ready
+         * \return true if the vessel is ready, otherwise false.
+         */
+        private static bool IsVesselReady()
+        {
+            return (Time.timeSinceLevelLoad > 1.0f) && FlightGlobals.ready;
+        }
+
+        /**
+         * \brief Return the elapsed time since last update.
+         * \return elapsed time
+         */
+        private double GetElapsedTime()
+        {
+            return Planetarium.GetUniversalTime() - LastUpdateTime;
+        }
+
+        public override void OnUpdate()
+        {
+            UpdateJumpStatistics();
             base.OnUpdate();
         }
 
@@ -209,7 +271,7 @@ namespace ScienceFoundry.FTL
             if (activationTime >= maxChargeTime)
             {
                 Force += PowerDrive((maxChargeTime - (activationTime - deltaT)) * spinRate, deltaT);
-                ExecuteJump();
+                state = DriveState.JUMPING;
             }
             else
             {
@@ -217,7 +279,7 @@ namespace ScienceFoundry.FTL
 
                 if (Force > navCom.GetRequiredForce())
                 {
-                    ExecuteJump();
+                    state = DriveState.JUMPING;
                 }
             }
         }
@@ -239,20 +301,13 @@ namespace ScienceFoundry.FTL
             {
                 ScreenMessages.PostScreenMessage("Jump failed!", 2f, ScreenMessageStyle.UPPER_CENTER);
             }
-
             driveSound.audio.Stop();
-            driveActivated = false;
-            updateInterval = 1f;
             Force = 0;
+            state = DriveState.IDLE;
         }
 
         private void StartDrive()
         {
-            lastUpdate = Time.time;
-            startSpin = false;
-            driveActivated = true;
-            activationTime = 0;
-            updateInterval = 0.1f;
         }
     }
 }

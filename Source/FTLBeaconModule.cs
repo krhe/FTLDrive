@@ -5,6 +5,7 @@ using System.Text;
 
 namespace ScienceFoundry.FTL
 {
+    [KSPModule("FTL Beacon")]
     public class FTLBeaconModule : PartModule
     {
         [KSPField(guiActive = false, guiActiveEditor = false, isPersistant = true)]
