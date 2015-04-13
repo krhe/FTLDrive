@@ -53,3 +53,4 @@ Source/FTLDrive.v12.suo
 Source/obj/Debug/FTLDrive.dll
 Source/obj/Debug/FTLDrive.pdb
 Source/bin/Debug/FTLDrive.dll
+*.suo
