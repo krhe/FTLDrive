@@ -56,3 +56,4 @@ Source/bin/Debug/FTLDrive.dll
 *.suo
 Source/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache
 Source/obj/Debug/FTLDrive.csproj.FileListAbsolute.txt
+Source/obj/Debug/FTLDrive.csprojResolveAssemblyReference.cache
