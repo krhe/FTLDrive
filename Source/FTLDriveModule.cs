@@ -212,7 +212,7 @@ namespace ScienceFoundry.FTL
             }
         }
 
-        public override void OnFixedUpdate()
+        public void FixedUpdate()
         {
             if (IsVesselReady())
             {
@@ -304,10 +304,6 @@ namespace ScienceFoundry.FTL
             driveSound.audio.Stop();
             Force = 0;
             state = DriveState.IDLE;
-        }
-
-        private void StartDrive()
-        {
         }
     }
 }
