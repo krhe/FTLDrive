@@ -138,7 +138,7 @@ namespace ScienceFoundry.FTL
         {
             if (navCom.JumpPossible)
             {
-                beaconName = navCom.Destination.vesselName;
+                beaconName = BeaconDescriptor(navCom.Destination);
                 requiredForce = String.Format("{0:0.0}iN", navCom.GetRequiredForce());
                 successProb = String.Format("{0:0.0}%", navCom.GetSuccesProbability(maxGeneratorForce)*100);
             }
@@ -148,6 +148,27 @@ namespace ScienceFoundry.FTL
                 requiredForce = "Inf";
                 successProb = "?";
             }
+        }
+
+        private string BeaconDescriptor(Vessel beacon)
+        {
+            string retValue = beacon.vesselName;
+            var orbit = beacon.orbitDriver;
+            
+            if ((orbit.referenceBody != null) && (beacon.orbit != null))
+            {
+                var body = orbit.referenceBody;
+                var altitude = beacon.orbit.altitude;
+
+                if (altitude < 1000000)
+                    retValue = String.Format("{0} ({1:0.0km})", body.name, altitude / 1000);
+                else
+                    retValue = String.Format("{0} ({1:0.0Mm})", body.name, altitude / 1000000);
+
+
+            }
+
+            return retValue;
         }
 
         public override void OnStart(PartModule.StartState state)

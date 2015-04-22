@@ -60,3 +60,4 @@ Source/obj/Debug/FTLDrive.csprojResolveAssemblyReference.cache
 Source/bin/Debug/Assembly-CSharp.xml
 Source/bin/Debug/UnityEngine.xml
 Source/FTLDrive.v12.suo
+*.suo
