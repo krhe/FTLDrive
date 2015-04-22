@@ -136,7 +136,7 @@ namespace ScienceFoundry.FTL
         {
             double retValue = body.gravParameter / (altitude * altitude);
             var orbit = body.GetOrbit();
-
+            
             if (orbit != null)
             {
                 if (orbit.referenceBody != null)
